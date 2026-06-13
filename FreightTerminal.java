@@ -161,7 +161,29 @@ public class FreightTerminal {
 
         return null;
     }
+    /**
+     * BONUS 54: Cancel a package.
+     * Searches pendingPackages only (not containers).
+     * If found, remove and return it.
+     * If not found, return null.
+     * Packages cannot be cancelled once packed.
+     */
+    public Package cancelPackage(String trackingId) {
 
+        for (int i = 0; i < pendingPackages.size(); i++) {
+
+            Package p = pendingPackages.get(i);
+
+            if (p.getTrackingId().equals(trackingId)) {
+
+                pendingPackages.remove(i);
+                return p;
+            }
+        }
+
+        return null;
+    }
+    
     /**
      * Returns the list of active containers (for printing manifests in Driver).
      */
