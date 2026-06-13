@@ -1,0 +1,240 @@
+import java.util.Arrays;
+import java.util.List;
+
+/**
+ * Represents a single cargo item in the Caribbean freight system.
+ * Each package is auto-assigned a unique tracking ID in the format PKG-XXXX.
+ */
+public class Package {
+
+    // TODO M1: Initialise this static counter to 1.
+    private static int nextTrackingNumber = 1;
+
+    private static final List<String> VALID_DESTINATIONS = Arrays.asList(
+        "Trinidad", "Barbados", "Jamaica", "Antigua", "Grenada"
+    );
+
+    // TODO M1: These fields are declared but not yet assigned.
+    // Your constructors (M2, M3) must assign them.
+    private String trackingId;
+    private String senderName;
+    private String receiverName;
+    private double weightKg;
+    private int lengthCm;
+    private int widthCm;
+    private int heightCm;
+    private String destination;
+    private boolean isFragile;
+    private double declaredValue;
+
+    /**
+     * Full constructor with all 9 parameters.
+     * TODO M2: Implement this constructor.
+     *   - Validate: senderName and receiverName non-null and non-empty
+     *   - Validate: weightKg > 0
+     *   - Validate: all dimensions > 0
+     *   - Validate: destination is in VALID_DESTINATIONS
+     *   - Throw IllegalArgumentException on any failure
+     *   - Auto-assign trackingId using String.format("PKG-%04d", nextTrackingNumber)
+     *   - Increment nextTrackingNumber
+     *   - Assign all fields
+     */
+    public Package(String senderName, String receiverName, double weightKg,
+                   int lengthCm, int widthCm, int heightCm,
+                   String destination, boolean isFragile, double declaredValue) {
+
+        if (senderName == null || senderName.trim().isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Sender name must not be null or empty");
+        }
+
+        if (receiverName == null || receiverName.trim().isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Receiver name must not be null or empty");
+        }
+
+        if (weightKg <= 0) {
+            throw new IllegalArgumentException("Weight must be positive");
+        }
+
+        if (lengthCm <= 0 || widthCm <= 0 || heightCm <= 0) {
+            throw new IllegalArgumentException(
+                    "Dimensions must be positive");
+        }
+
+        if (!VALID_DESTINATIONS.contains(destination)) {
+            throw new IllegalArgumentException("Invalid destination");
+        }
+
+        trackingId = String.format("PKG-%04d", nextTrackingNumber);
+        nextTrackingNumber++;
+
+        this.senderName = senderName;
+        this.receiverName = receiverName;
+        this.weightKg = weightKg;
+        this.lengthCm = lengthCm;
+        this.widthCm = widthCm;
+        this.heightCm = heightCm;
+        this.destination = destination;
+        this.isFragile = isFragile;
+        this.declaredValue = declaredValue;
+    }
+
+    /**
+     * Convenience constructor: not fragile, no declared value.
+     * TODO M3: Chain to the full constructor using this(...) with
+     *   isFragile=false and declaredValue=0.0
+     */
+    public Package(String senderName, String receiverName, double weightKg,
+                   int lengthCm, int widthCm, int heightCm,
+                   String destination) {
+
+        this(senderName, receiverName, weightKg,
+             lengthCm, widthCm, heightCm,
+             destination, false, 0.0);
+    }
+
+    // --- Getters ---
+    // TODO M4: Write getters for ALL fields:
+    //   getTrackingId(), getSenderName(), getReceiverName(), getWeightKg(),
+    //   getLengthCm(), getWidthCm(), getHeightCm(), getDestination(),
+    //   isFragile(), getDeclaredValue()
+
+    public String getTrackingId() {
+        return trackingId;
+    }
+
+    public String getSenderName() {
+        return senderName;
+    }
+
+    public String getReceiverName() {
+        return receiverName;
+    }
+
+    public double getWeightKg() {
+        return weightKg;
+    }
+
+    public int getLengthCm() {
+        return lengthCm;
+    }
+
+    public int getWidthCm() {
+        return widthCm;
+    }
+
+    public int getHeightCm() {
+        return heightCm;
+    }
+
+    public String getDestination() {
+        return destination;
+    }
+
+    public boolean isFragile() {
+        return isFragile;
+    }
+
+    public double getDeclaredValue() {
+        return declaredValue;
+    }
+
+    // --- Computed methods ---
+
+    /**
+     * TODO M5: Return lengthCm * widthCm * heightCm
+     */
+    public int getVolumeCm3() {
+        return lengthCm * widthCm * heightCm;
+    }
+
+    /**
+     * TODO M5: Return getVolumeCm3() / 5000.0
+     */
+    public double getVolumetricWeightKg() {
+        return getVolumeCm3() / 5000.0;
+    }
+
+    /**
+     * TODO M5: Return Math.max(weightKg, getVolumetricWeightKg())
+     */
+    public double getBillableWeightKg() {
+        return Math.max(weightKg, getVolumetricWeightKg());
+    }
+
+    /**
+     * TODO M6: Implement the shipping cost formula.
+     *   1. Look up rate per kg by destination
+     *   2. cost = getBillableWeightKg() * ratePerKg
+     *   3. If fragile: cost *= 1.25
+     *   4. If declaredValue > 0: cost += declaredValue * 0.015
+     *   5. Round: Math.round(cost * 100) / 100.0
+     */
+    public double getShippingCost() {
+
+        double ratePerKg;
+
+        switch (destination) {
+            case "Trinidad":
+                ratePerKg = 8.00;
+                break;
+
+            case "Barbados":
+                ratePerKg = 12.50;
+                break;
+
+            case "Jamaica":
+                ratePerKg = 15.00;
+                break;
+
+            case "Antigua":
+                ratePerKg = 18.00;
+                break;
+
+            case "Grenada":
+                ratePerKg = 10.00;
+                break;
+
+            default:
+                ratePerKg = 0.0;
+        }
+
+        double cost = getBillableWeightKg() * ratePerKg;
+
+        if (isFragile) {
+            cost *= 1.25;
+        }
+
+        if (declaredValue > 0) {
+            cost += declaredValue * 0.015;
+        }
+
+        return Math.round(cost * 100) / 100.0;
+    }
+
+    /**
+     * TODO M7: Return a string in this format:
+     *   "PKG-0001  Alice -> Bob  Trinidad  5.00 kg  $40.00"
+     * If fragile, append "  [FRAGILE]" at the end.
+     * Use String.format for formatting.
+     */
+    @Override
+    public String toString() {
+
+        String result = String.format(
+                "%s %s -> %s %s %.2f kg $%.2f",
+                trackingId,
+                senderName,
+                receiverName,
+                destination,
+                getBillableWeightKg(),
+                getShippingCost());
+
+        if (isFragile) {
+            result += " [FRAGILE]";
+        }
+
+        return result;
+    }
+}
